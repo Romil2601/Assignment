@@ -1,0 +1,121 @@
+# FixTrack - Python Console Application for Gadget Repair Management
+import datetime
+
+orders = []
+order_id_counter = 1
+
+def book_repair_order():
+    global order_id_counter # global keyword to modify the global variable
+    print("\n=== New Repair Order Booking ===")
+    name = input("Customer Name: ")
+    device = input("Device Type: ")
+    issue = input("Issue Description: ")
+    due_date = input("Due Date (YYYY-MM-DD): ")
+
+    order = {
+        "order_id": order_id_counter,
+        "customer_name": name,
+        "device": device,
+        "issue": issue,
+        "due_date": due_date,
+        "status": "Pending",
+        "bill": None
+    }
+    orders.append(order)
+    print(f"\n✅ Order #{order_id_counter} has been recorded successfully!\n")
+    order_id_counter += 1
+
+
+def view_orders():
+    print("\n=== Repair Orders ===")
+    if not orders:
+        print("No orders found.")
+        return
+
+    for order in orders:
+        print(f"Order ID: {order['order_id']}")
+        print(f"Customer: {order['customer_name']}")
+        print(f"Device: {order['device']}")
+        print(f"Issue: {order['issue']}")
+        print(f"Due Date: {order['due_date']}")
+        print(f"Status: {order['status']}")
+        print("-" * 30)
+
+
+def generate_bill():
+    print("\n=== Generate Invoice ===")
+    try:
+        order_id = int(input("Enter Order ID: "))
+    except ValueError:
+        print("Invalid input. Enter a numeric Order ID.")
+        return
+    
+    order = next((o for o in orders if o["order_id"] == order_id), None) # next() is used to get the first matching order or None
+    if not order:
+        print("❌ Order not found.")
+        return
+
+    if order["status"] == "Completed":
+        print("Bill already generated for this order.")
+        return
+
+    parts_cost = float(input("Total cost of parts replaced: ₹"))
+    repair_fee = float(input("Repair service charge: ₹"))
+    tax_rate = 0.18  # 18% tax
+    discount_rate = float(input("Enter discount percentage (0 if none): ")) / 100
+
+    subtotal = parts_cost + repair_fee
+    tax = subtotal * tax_rate
+    total_before_discount = subtotal + tax
+    discount = total_before_discount * discount_rate
+    final_total = total_before_discount - discount
+
+    bill = {
+        "parts_cost": parts_cost,
+        "repair_fee": repair_fee,
+        "tax": tax,
+        "discount": discount,
+        "total": final_total
+    }
+
+    order["bill"] = bill
+    order["status"] = "Completed"
+
+    print("\n=== Invoice ===")
+    print(f"Customer: {order['customer_name']}")
+    print(f"Device: {order['device']}")
+    print(f"Issue: {order['issue']}")
+    print(f"Parts Cost: ₹{parts_cost}")
+    print(f"Repair Fee: ₹{repair_fee}")
+    print(f"Tax (18%): ₹{tax:.2f}")
+    print(f"Discount: ₹{discount:.2f}")
+    print(f"Total Amount: ₹{final_total:.2f}")
+    print(f"Status: {order['status']}")
+    print("\n✅ Invoice generated successfully!\n")
+
+
+def main_menu():
+    while True:
+        print("\n==== FixTrack Main Menu ====")
+        print("1. Book New Repair Order")
+        print("2. View All Orders")
+        print("3. Generate Invoice")
+        print("4. Exit")
+
+        choice = input("Enter choice (1-4): ")
+
+        if choice == '1':
+            book_repair_order()
+        elif choice == '2':
+            view_orders()
+        elif choice == '3':
+            generate_bill()
+        elif choice == '4':
+            print("Exiting FixTrack... Goodbye!")
+            break
+        else:
+            print("Invalid choice. Please try again.")
+
+if __name__ == "__main__": # __name__ is used to check if the script is being run directly
+    print("Welcome to FixTrack - Device Repair Management System")
+    main_menu()
